@@ -149,6 +149,8 @@ def from_numpy(arr):
     arr = numpy.array(arr, dtype='int32')
   if isinstance(arr, float):
     arr = numpy.array(arr, dtype='float32')
+  if isinstance(arr, list):
+    arr = numpy.array(arr, dtype='float32')
   if isinstance(arr, numpy.number):
     arr = numpy.array(arr)
   assert isinstance(arr, numpy.ndarray)

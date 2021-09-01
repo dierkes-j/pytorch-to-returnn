@@ -35,6 +35,24 @@ def ones(*size, out=None, dtype=None, layout=None, device=None, requires_grad=Fa
   return tensor(numpy.ones(size, dtype=dtype))
 
 
+def arange(end: int, start: int = 0, step: int = 1, dtype=None, out: Optional[Tensor] = None) -> Tensor:
+  if not dtype:
+    dtype = _default_float_type
+  return tensor(numpy.arange(start=start, stop=end, step=step, dtype=dtype))
+
+
+def eye(n: int, m: Optional[int] = None, dtype=None, out: Optional[Tensor] = None) -> Tensor:
+  if not dtype:
+    dtype = _default_float_type
+  return tensor(numpy.eye(N=n, M=m, dtype=dtype))
+
+
+def linspace(start: int, end: int, steps: int, dtype=None, out: Optional[Tensor] = None) -> Tensor:
+  if not dtype:
+    dtype = _default_float_type
+  return tensor(numpy.linspace(start=start, stop=end, num=steps, dtype=dtype))
+
+
 def tensor(data, *, dtype=None, device=None, requires_grad=False, pin_memory=False):
   from .._C import from_numpy
   x = from_numpy(data)
