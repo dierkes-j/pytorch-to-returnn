@@ -1,6 +1,6 @@
 
 import warnings
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from .module import Module
 from ...tensor import Tensor
 
@@ -47,14 +47,22 @@ class LogSigmoid(_ActivationReturnn):
 class Power(Module):
   is_original_torch_module = False
 
-  def __init__(self, exponent: float) -> None:
+  def __init__(self, exponent: Union[float, int, Tensor]) -> None:
     super(Power, self).__init__()
     self.exponent = exponent
 
   def create_returnn_layer_dict(self, input: Tensor) -> Dict[str, Any]:
-    return {
-      "class": "eval", "eval": f"tf.math.pow(source(0), {self.exponent})",
-      "from": self._get_input_layer_name(input)}
+    if isinstance(self.exponent, (float, int)):
+      return {
+        "class": "eval", "eval": f"tf.math.pow(source(0), {self.exponent})",
+        "from": [self._get_input_layer_name(input)]}
+    elif isinstance(self.exponent, Tensor):
+      assert input.shape == (1,), "Not implemented otherwise"
+      return {
+        "class": "eval", "eval": "tf.math.pow(source(1), source(0))",
+        "from": [self._get_input_layer_name(self.exponent), self._get_input_layer_name(input)]}
+    else:
+      raise ValueError(f"Not implemented for exponent of type {type(self.exponent)}")
 
 
 class LeakyReLU(Module):

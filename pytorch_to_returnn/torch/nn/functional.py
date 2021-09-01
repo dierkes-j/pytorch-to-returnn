@@ -403,7 +403,7 @@ def logsigmoid(input: Tensor):
   return modules.LogSigmoid().as_returnn_torch_functional()(input)
 
 
-def pow(input: Tensor, exponent: float):
+def pow(input: Tensor, exponent: Union[float, int, Tensor]):
   return modules.Power(exponent=exponent).as_returnn_torch_functional()(input)
 
 
