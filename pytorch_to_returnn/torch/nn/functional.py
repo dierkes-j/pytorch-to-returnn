@@ -446,6 +446,20 @@ def dropout(input: Tensor, p: float = 0.5, training: bool = True, inplace: bool 
     return modules.Dropout(p=p, inplace=inplace).as_returnn_torch_functional()(input)
 
 
+def stft(input: Tensor, n_fft: int, hop_length: Optional[int] = None, win_length: Optional[int] = None, window: Optional[Tensor] = None, center: bool = True, pad_mode: str = 'reflect', normalized: bool = False, onesided: Optional[bool] = None, return_complex: Optional[bool] = None) -> Tensor:
+  assert not normalized, "Not implemented otherwise"
+  assert onesided is True, "Not implemented otherwise"
+  # assert return_complex is None, "Not implemented otherwise"
+  if center:
+    signal_dim = input.dim()
+    extended_shape = [1] * (3 - signal_dim) + list(input.size())
+    pad_n = int(n_fft // 2)
+    input = pad(input.view(extended_shape), [pad_n, pad_n], pad_mode)
+    input = input.view(input.shape[-signal_dim:])
+  out = modules.Stft(fft_size=n_fft, frame_size=win_length, frame_shift=hop_length, window=window).as_returnn_torch_functional()(input)
+  return out
+
+
 def multi_head_attention_forward(
   query: Tensor,
   key: Tensor,

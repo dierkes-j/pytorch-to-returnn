@@ -12,6 +12,7 @@ from .batchnorm import *
 from .normalization import *
 from .rnn import *
 from .shape import *
+from .stft import *
 from .norm import *
 from .loss import *
 from .operator import *
