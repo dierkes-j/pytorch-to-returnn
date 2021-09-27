@@ -91,7 +91,9 @@ class Matmul(Module):
 
     shape += [shape1[-2], shape2[-1]]
     shape = tuple(shape)
-    returnn_axis_from_torch_axis = {i: i for i in range(len(shape))}
+    #returnn_axis_from_torch_axis = {i: i for i in range(len(shape))}
+    # todo: this needs to be adjusted! Is this correct, why is this correct?
+    returnn_axis_from_torch_axis = inputs_flat[0].returnn_naming_entry.returnn_axis_from_torch_axis
     return shape, returnn_axis_from_torch_axis
 
   def create_returnn_layer_dict(self, *inputs: Tensor, **kwargs) -> Dict[str, Any]:

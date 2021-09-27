@@ -44,6 +44,14 @@ class LogSigmoid(_ActivationReturnn):
   func_name = "log_sigmoid"
 
 
+class Real(_ActivationReturnn):
+  func_name = "real"  # TODO: check
+
+
+class Imag(_ActivationReturnn):
+  func_name = "imag"  # TODO: check
+
+
 class Power(Module):
   is_original_torch_module = False
 

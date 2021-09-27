@@ -311,6 +311,7 @@ def test_bmm():
       torch = wrapped_import("torch")
 
     inputs = inputs.transpose(0, 1)
+
     x = inputs.new_zeros(inputs.shape[0], inputs.shape[2], n_out) + 1  # (B, F_in, F_out)
     return torch.bmm(inputs, x)
 
@@ -318,6 +319,28 @@ def test_bmm():
   x = rnd.normal(0., 1., (n_time, n_batch, n_in)).astype("float32")
   verify_torch_and_convert_to_returnn(model_func, inputs=x, inputs_data_kwargs={
       "shape": (None, n_in), "time_dim_axis": 0, "batch_dim_axis": 1, "feature_dim_axis": 2})
+
+
+def test_stft():
+  #n_in, n_out = 11, 13
+  n_batch, n_time = 1, 228748
+
+  def model_func(wrapped_import, inputs: torch.Tensor):
+    if typing.TYPE_CHECKING or not wrapped_import:
+      import torch
+    else:
+      torch = wrapped_import("torch")
+
+    #x = inputs.new_zeros(inputs.shape[1], inputs.shape[0])  # (B, F_in, F_out)
+    import ipdb
+    ipdb.set_trace()
+    return torch.stft(inputs, n_fft=400, hop_length=160, win_length=400, center=False, onesided=True)
+
+  rnd = numpy.random.RandomState(42)
+  x = rnd.normal(0., 1., (n_batch, n_time)).astype("float32")
+  verify_torch_and_convert_to_returnn(model_func, inputs=x, inputs_data_kwargs={
+    "shape": (None,),
+    "time_dim_axis": 1, "batch_dim_axis": 0, "feature_dim_axis": None})
 
 
 def test_t():

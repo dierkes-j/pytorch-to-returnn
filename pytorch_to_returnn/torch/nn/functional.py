@@ -334,6 +334,24 @@ def max(*inputs: Tensor) -> Tensor:
   return modules.Max()(*inputs)
 
 
+def min(*inputs: Tensor) -> Tensor:
+  return modules.Min()(*inputs)
+
+
+def clamp(input: Tensor, min=None, max=None):
+  out = input
+  if not max == None:
+    if not isinstance(max, Tensor):
+      max = (torch.zeros(input.shape) + 1) * max
+    out = modules.Min()(max, out)
+  if not min == None:
+    if not isinstance(min, Tensor):
+      min = torch.zeros(input.shape) * 1
+    # todo: this is of course just wrong! Is there some problem with the returnn combine layer with maximum?
+    out = modules.Max()(out, out)
+  return out
+
+
 def linear(input: Tensor, weight: Tensor, bias: Optional[Tensor] = None):
   output = input.matmul(weight.t())
   if bias is not None:
@@ -413,6 +431,12 @@ def log(input: Tensor):
   return modules.Log().as_returnn_torch_functional()(input)
 
 
+def log10(input: Tensor):
+  log_input = modules.Log().as_returnn_torch_functional()(input)
+  log_10 = modules.Log().as_returnn_torch_functional()(10.0)
+  return log_input / log_10
+
+
 def sigmoid(input: Tensor):
   return modules.Sigmoid().as_returnn_torch_functional()(input)
 
@@ -423,6 +447,11 @@ def logsigmoid(input: Tensor):
 
 def pow(input: Tensor, exponent: Union[float, int, Tensor]):
   return modules.Power(exponent=exponent).as_returnn_torch_functional()(input)
+
+
+def amax(input: Tensor, dim: [int, tuple]):
+  from .modules.operator import Amax
+  return Amax(dim).as_returnn_torch_functional()(input)
 
 
 def normalize(input: Tensor, p=2, dim=1, eps=1e-12) -> Tensor:
@@ -464,7 +493,7 @@ def dropout(input: Tensor, p: float = 0.5, training: bool = True, inplace: bool 
     return modules.Dropout(p=p, inplace=inplace).as_returnn_torch_functional()(input)
 
 
-def stft(input: Tensor, n_fft: int, hop_length: Optional[int] = None, win_length: Optional[int] = None, window: Optional[Tensor] = None, center: bool = True, pad_mode: str = 'reflect', normalized: bool = False, onesided: Optional[bool] = None, return_complex: Optional[bool] = None) -> Tensor:
+def stft(input: Tensor, n_fft: int, hop_length: Optional[int] = None, win_length: Optional[int] = None, window: Optional[Tensor] = None, center: bool = True, pad_mode: str = 'reflect', normalized: bool = False, onesided: Optional[bool] = None, return_complex: Optional[bool] = False) -> Tensor:
   assert not normalized, "Not implemented otherwise"
   assert onesided is True, "Not implemented otherwise"
   # assert return_complex is None, "Not implemented otherwise"
@@ -475,6 +504,16 @@ def stft(input: Tensor, n_fft: int, hop_length: Optional[int] = None, win_length
     input = pad(input.view(extended_shape), [pad_n, pad_n], pad_mode)
     input = input.view(input.shape[-signal_dim:])
   out = modules.Stft(fft_size=n_fft, frame_size=win_length, frame_shift=hop_length, window=window).as_returnn_torch_functional()(input)
+  if not return_complex:
+    import ipdb
+    ipdb.set_trace()
+    real = modules.Real().as_returnn_torch_functional()(out)
+    imag = modules.Imag().as_returnn_torch_functional()(out)
+    out = modules.Stack(dim=-1).as_returnn_torch_functional()(real, imag)
+  # TODO:
+  # reshape as output seems to be different than usually in PyTorch
+  # if return_complex, introduce new dim with real and imag part.
+  # center does not work yet
   return out
 
 

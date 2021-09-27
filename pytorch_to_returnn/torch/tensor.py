@@ -210,6 +210,10 @@ class Tensor:
     from .nn.functional import sigmoid
     return sigmoid(self)
 
+  def amax(self, dim: [int, tuple]):
+    from .nn.functional import amax
+    return amax(self, dim)
+
   def pow(self, exponent: Union[float, int, Tensor]):
     from .nn.functional import pow
     return pow(self, exponent)
@@ -235,10 +239,14 @@ class Tensor:
       from .nn import Slice
       out = self
       for ax, ax_slice in enumerate(item):
-        assert isinstance(ax_slice, slice)
-        if not ax_slice.start and not ax_slice.stop and ax_slice.step in {1, None}:
-          continue
-        out = Slice(axis=ax, start=ax_slice.start, stop=ax_slice.stop, step=ax_slice.step)(out)
+        assert isinstance(ax_slice, (slice, int))
+        if isinstance(ax_slice, slice):
+          if not ax_slice.start and not ax_slice.stop and ax_slice.step in {1, None}:
+            continue
+          out = Slice(axis=ax, start=ax_slice.start, stop=ax_slice.stop, step=ax_slice.step)(out)
+        else:
+          from .nn import Gather
+          out = Gather(dim=ax, pos=ax_slice)(out)
       return out
     else:
       raise NotImplementedError

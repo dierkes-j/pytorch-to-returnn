@@ -113,16 +113,48 @@ class Reciprocal(Module):
       "class": "eval", "eval": f"tf_compat.v1.reciprocal({x})",
       "from": self._get_input_layer_name(input)}
 
+class Amax(Module):
+  is_original_torch_module = False
+
+  def __init__(self, dim: [int, tuple]):
+    super(Amax, self).__init__()
+    if not isinstance(dim, tuple):
+      dim = (dim,)
+    self.dim = (list(dim))
+
+
+  def create_returnn_layer_dict(self, input: Tensor):
+    return { "class": "reduce", "mode": "max", "axes": self.dim,
+      "from": self._get_input_layer_name(input) }
 
 class Max(Module):
   is_original_torch_module = False
-  pass  # TODO
 
+  def __init__(self):
+    super(Max, self).__init__()
+
+  def create_returnn_layer_dict(self, *inputs: Tensor):
+    return {
+      "class": "combine", "kind": "eval", "eval": "tf.math.maximum(source(0), source(1))",
+      "from": [self._get_input_layer_name(x) for x in inputs]}
+
+
+class Min(Module):
+  is_original_torch_module = False
+
+  def __init__(self):
+    super(Min, self).__init__()
+
+  def create_returnn_layer_dict(self, *inputs: Tensor):
+    return {
+      "class": "combine", "kind": "eval", "eval": "tf.math.minimum(source(0), source(1))",
+      "from": [self._get_input_layer_name(x) for x in inputs]}
 
 class ReturnnReinterpretSameSizeAs(Module):
   """
   Used by :func:`_unify_tensor_axes_returnn_meta`.
   """
+
   is_original_torch_module = False
 
   def create_returnn_layer_dict(self, input: Tensor, same_as: Tensor) -> Dict[str, Any]:
